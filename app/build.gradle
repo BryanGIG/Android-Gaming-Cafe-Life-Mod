@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.cheat.template'
+    namespace 'com.bryangig.cafe'
     compileSdk 34
 
     defaultConfig {
@@ -11,6 +11,11 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        externalNativeBuild {
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
+        }
     }
 
     compileOptions {
@@ -52,6 +57,11 @@ afterEvaluate {
             into file("$buildDir/outputs/native/${variant.name}")
         }
 
-        variant.assembleProvider.get().finalizedBy("copyOutputNative${variantCapped}")
+        tasks.register("pushNative${variantCapped}", Exec) {
+            dependsOn("copyOutputNative${variantCapped}")
+            commandLine "adb", "push", "$buildDir/outputs/native/${variant.name}", "/sdcard/MT2/apks"
+        }
+
+        variant.assembleProvider.get().finalizedBy("pushNative${variantCapped}")
     }
 }
